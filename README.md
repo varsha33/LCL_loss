@@ -2,18 +2,8 @@
 
 This repo contains the pytorch implementation of Label-aware Contrastive Loss (LCL). 
 ## Dataset preprocess
-Download datasets from the follwing links:
-#### Dataset source
 
-	Empathetic Dialogue- https://github.com/facebookresearch/EmpatheticDialogues.git
-
-	GoEmotions - https://github.com/google-research/google-research/tree/master/goemotions
-
-	ISEAR - https://www.unige.ch/cisa/research/materials-and-online-research/research-material/
-
-	EmoInt - https://saifmohammad.com/WebPages/EmotionIntensity-SharedTask.html
-	
-	SST-2,SST-5 - https://nlp.stanford.edu/sentiment/index.html
+Download datasets from the given data source links, [Empathetic Dialogue](https://github.com/facebookresearch/EmpatheticDialogues.git), [GoEmotions](https://github.com/google-research/google-research/tree/master/goemotions), [ISEAR](https://www.unige.ch/cisa/research/materials-and-online-research/research-material/), [EmoInt](https://saifmohammad.com/WebPages/EmotionIntensity-SharedTask.html) [SST-2,SST-5](https://nlp.stanford.edu/sentiment/index.html)
 
 ```
 python data_preprocess.py -d <dataset name> --aug ## for emotion datasets
