@@ -1,6 +1,6 @@
 # Label-aware Contrastive Loss
 
-This repo contains the pytorch implementation of label-aware contrastive loss. 
+This repo contains the pytorch implementation of Label-aware Contrastive Loss (LCL). 
 ## Dataset preprocess
 Download datasets from the follwing links:
 #### Dataset source
