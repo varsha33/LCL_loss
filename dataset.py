@@ -71,69 +71,15 @@ class SST_dataset(Dataset):
         return len(self.data["sentiment"])
 
 def get_dataloader(batch_size,dataset,seed=None,w_aug=True,label_list=None):
-
+    ## if using subset, change this part to input the correct data file
     if w_aug:
-        if label_list == "16":
-            with open('./preprocessed_data/'+dataset+'_waug_preprocessed_bert_16.pkl', "rb") as f:
-                data = pickle.load(f)
-            f.close()
-
-        elif label_list == "8":
-            with open('./preprocessed_data/'+dataset+'_waug_preprocessed_bert_8.pkl', "rb") as f:
-                data = pickle.load(f)
-            f.close()
-        elif label_list == "4-easy":
-            with open('./preprocessed_data/'+dataset+'_waug_preprocessed_bert_4_easy.pkl', "rb") as f:
-                data = pickle.load(f)
-            f.close()
-        elif label_list == "4-hard":
-            with open('./preprocessed_data/'+dataset+'_waug_preprocessed_bert_4_hard.pkl', "rb") as f:
-                data = pickle.load(f)
-            f.close()
-
-        elif label_list == "4-hard1":
-            with open('./preprocessed_data/'+dataset+'_waug_preprocessed_bert_4-hard1.pkl', "rb") as f:
-                data = pickle.load(f)
-            f.close()
-        elif label_list == "3-hard":
-            with open('./preprocessed_data/'+dataset+'_waug_preprocessed_bert_3-hard.pkl', "rb") as f:
-                data = pickle.load(f)
-            f.close()
-
-        else:
-            with open('./preprocessed_data/'+dataset+'_waug_preprocessed_bert.pkl', "rb") as f:
+        with open('./preprocessed_data/'+dataset+'_waug_preprocessed_bert.pkl', "rb") as f:
                 data = pickle.load(f)
             f.close()
     else:
-        if label_list == "16":
-            with open('./preprocessed_data/'+dataset+'_preprocessed_bert_16.pkl', "rb") as f:
-                data = pickle.load(f)
-            f.close()
-
-        elif label_list == "8":
-            with open('./preprocessed_data/'+dataset+'_preprocessed_bert_8.pkl', "rb") as f:
-                data = pickle.load(f)
-            f.close()
-        elif label_list == "4-easy":
-            with open('./preprocessed_data/'+dataset+'_preprocessed_bert_4_easy.pkl', "rb") as f:
-                data = pickle.load(f)
-            f.close()
-        elif label_list == "4-hard":
-            with open('./preprocessed_data/'+dataset+'_preprocessed_bert_4_hard.pkl', "rb") as f:
-                data = pickle.load(f)
-            f.close()
-        elif label_list == "4-hard1":
-            with open('./preprocessed_data/'+dataset+'_preprocessed_bert_4-hard1.pkl', "rb") as f:
-                data = pickle.load(f)
-            f.close()
-        elif label_list == "3-hard":
-            with open('./preprocessed_data/'+dataset+'_preprocessed_bert_3-hard.pkl', "rb") as f:
-                data = pickle.load(f)
-            f.close()
-        else:
-            with open('./preprocessed_data/'+dataset+'_preprocessed_bert.pkl', "rb") as f:
-                data = pickle.load(f)
-            f.close()
+        with open('./preprocessed_data/'+dataset+'_preprocessed_bert.pkl', "rb") as f:
+            data = pickle.load(f)
+        f.close()
 
     if "sst-" in dataset:
         train_dataset = SST_dataset(data["train"],training=True,w_aug=w_aug)
