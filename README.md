@@ -25,4 +25,4 @@ We took help from the following open source projects and we acknowledge their co
 4. Tweet preprocess <https://github.com/abdulfatir/twitter-sentiment-analysis.git>
 
 
-**Note:** There is minor typo in Eq 1 in the paper relating to the placement of weight wi yi (i.e the positive weights which are constant for a given sample). It is meant to be outside the log and is correctly implemented in the code. The results in the paper follow the current implementation.
+**Note:** There is minor typo in Eq 3 in the paper relating to the placement of weight wi yi (i.e the positive weights which are constant for a given sample). It is meant to be outside the log and is correctly implemented in the code. The results in the paper follow the current implementation.
