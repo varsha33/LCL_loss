@@ -74,8 +74,8 @@ def get_dataloader(batch_size,dataset,seed=None,w_aug=True,label_list=None):
     ## if using subset, change this part to input the correct data file
     if w_aug:
         with open('./preprocessed_data/'+dataset+'_waug_preprocessed_bert.pkl', "rb") as f:
-                data = pickle.load(f)
-            f.close()
+            data = pickle.load(f)
+        f.close()
     else:
         with open('./preprocessed_data/'+dataset+'_preprocessed_bert.pkl', "rb") as f:
             data = pickle.load(f)
