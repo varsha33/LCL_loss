@@ -5,6 +5,8 @@ This repo contains the pytorch implementation of Label-aware Contrastive Loss (L
 
 Download datasets from the given data source links, [Empathetic Dialogue](https://github.com/facebookresearch/EmpatheticDialogues.git), [GoEmotions](https://github.com/google-research/google-research/tree/master/goemotions), [ISEAR](https://www.unige.ch/cisa/research/materials-and-online-research/research-material/), [EmoInt](https://saifmohammad.com/WebPages/EmotionIntensity-SharedTask.html) [SST-2,SST-5](https://nlp.stanford.edu/sentiment/index.html)
 
+For Empathetic Dialogue dataset, an additional extraction of the raw data was done to get the csv files using ed_data_extract.py required for the below pre-processing
+
 ```
 python data_preprocess.py -d <dataset name> --aug ## for emotion datasets
 python sst_data_preprocess.py -d <dataset name> --aug ## for sentiment datasets
