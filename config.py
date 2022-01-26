@@ -1,7 +1,7 @@
 all_datasets = ['ed', 'emoint', 'goemotions', 'isear', 'sst-2', 'sst-5']
 
-## search space
-seach_space = {
+# search space
+search_space = {
     'main_learning_rate': [1e-5, 2e-5, 3e-5],
     'temperature': [0.1, 0.3, 0.5],
     'lambda_loss': [0.1, 0.2, 0.3, 0.4, 0.5],
@@ -9,7 +9,7 @@ seach_space = {
 
 dataset = "sst-2"
 
-## list of possible paramters to be tuned can be increased
+# list of possible paramters to be tuned can be increased
 tuning_param = ["lambda_loss", "main_learning_rate", "nepoch", "temperature"]
 
 if dataset == 'goemotions':
@@ -33,12 +33,11 @@ decay = 1e-02
 hidden_size = 768
 nepoch = [5]
 criterion = "emo_acc"
-run_name = ""  ## for subset use "subset" else leave empty
+run_name = ""  # for subset use "subset" else leave empty
 loss_type = "lcl"
 model_type = "electra"
-label_list = None
+label_list = ["Angry", "Ashamed", "Furious", "Guilty"]
 
-SEED = [0]
 SEED = [0, 1, 2, 3, 4]
 
 param = {"temperature": temperature, "run_name": run_name, "dataset": dataset, "main_learning_rate": main_learning_rate,

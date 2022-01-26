@@ -1,0 +1,50 @@
+{
+  "param": {
+    "temperature": 0.3,
+    "run_name": "",
+    "dataset": "ed",
+    "main_learning_rate": 2e-05,
+    "batch_size": 10,
+    "hidden_size": 768,
+    "nepoch": 5,
+    "criterion": "emo_acc",
+    "lambda_loss": 0.5,
+    "loss_type": "lcl",
+    "label_list": [
+      "Devastated",
+      "Nostalgic",
+      "Sad",
+      "Sentimental"
+    ],
+    "decay": 0.01,
+    "model_type": "electra",
+    "emotion_size": 32,
+    "SEED": 3
+  },
+  "train_loss_1": 0.8188361331062802,
+  "train_loss_2": 0.48128839986304106,
+  "stop_epoch": 2,
+  "stop_step": 686,
+  "valid_emo_f1_score_1": {
+    "macro": 66.57291300441423,
+    "weighted": 66.78814098172793
+  },
+  "test_emo_f1_score_1": {
+    "macro": 60.5968486391851,
+    "weighted": 59.902326243748796
+  },
+  "valid_emo_accuracy_1": 67.63848396501457,
+  "test_emo_accuracy_1": 62.22910216718266,
+  "train_emo_accuracy_1": 60.46610230914617,
+  "valid_emo_f1_score_2": {
+    "macro": 65.87225765290519,
+    "weighted": 65.54793743395157
+  },
+  "test_emo_f1_score_2": {
+    "macro": 61.67870590947513,
+    "weighted": 60.98248024897227
+  },
+  "valid_emo_accuracy_2": 65.88921282798835,
+  "test_emo_accuracy_2": 61.919504643962846,
+  "train_emo_accuracy_2": 65.31779719207246
+}

@@ -296,14 +296,13 @@ def lcl_train(log, save_home):
             log.test_emo_accuracy_2 = test_acc_2
             log.train_emo_accuracy_2 = train_acc_2
 
-            ## load the model
+            # dump the model
             with open(save_home + "/log.json", 'w') as fp:
                 json.dump(dict(log), fp, indent=4)
-            fp.close()
 
             with open(save_home + "/feature.json", 'w') as fp:
                 json.dump(test_save_pred, fp, indent=4)
-            fp.close()
+        print()
 
 
 if __name__ == '__main__':
@@ -319,40 +318,37 @@ if __name__ == '__main__':
 
     param_list = [param[i] for i in tuning_param]
     param_list = [tuple(tuning_param)] + list(iter_product(*param_list))  ## [(param_name),(param combinations)]
+    log = edict()
+    log.param = param
 
+    model_run_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
+    if log.param.run_name != "":
+        save_home = "./save/final/" + log.param.dataset + "/" + log.param.run_name + "/" + log.param.loss_type + "/" + model_run_time + "/"
+    else:
+        save_home = "./save/final/" + log.param.dataset + "/" + log.param.loss_type + "/" + model_run_time + "/"
+
+    if log.param.run_name == "subset":
+        log.param.emotion_size = int(log.param.label_list.split("-")[0])
+    ## reseeding before every run while tuning
+
+    if log.param.dataset == "ed":
+        log.param.emotion_size = 32
+    elif log.param.dataset == "emoint":
+        log.param.emotion_size = 4
+    elif log.param.dataset == "goemotions":
+        log.param.emotion_size = 27
+    elif log.param.dataset == "isear":
+        log.param.emotion_size = 7
+    elif log.param.dataset == "sst-2":
+        log.param.emotion_size = 2
+    elif log.param.dataset == "sst-5":
+        log.param.emotion_size = 5
     for param_com in param_list[1:]:  # as first element is just name
+        for num, val in enumerate(param_com):
+            log.param[param_list[0][num]] = val
 
-        log = edict()
-        log.param = param
-
-        model_run_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
-        if log.param.run_name != "":
-            save_home = "./save/final/" + log.param.dataset + "/" + log.param.run_name + "/" + log.param.loss_type + "/" + model_run_time + "/"
-        else:
-            save_home = "./save/final/" + log.param.dataset + "/" + log.param.loss_type + "/" + model_run_time + "/"
-
-        for seed in seeds:
-            log.param.SEED = seed
-
-            for num, val in enumerate(param_com):
-                log.param[param_list[0][num]] = val
-            if log.param.run_name == "subset":
-                log.param.emotion_size = int(log.param.label_list.split("-")[0])
-            ## reseeding before every run while tuning
-
-            if log.param.dataset == "ed":
-                log.param.emotion_size = 32
-            elif log.param.dataset == "emoint":
-                log.param.emotion_size = 4
-            elif log.param.dataset == "goemotions":
-                log.param.emotion_size = 27
-            elif log.param.dataset == "isear":
-                log.param.emotion_size = 7
-            elif log.param.dataset == "sst-2":
-                log.param.emotion_size = 2
-            elif log.param.dataset == "sst-5":
-                log.param.emotion_size = 5
-
-            lcl_train(log, save_home=save_home)
-
-            a = 1
+    for seed in seeds:
+        log.param.SEED = seed
+        lcl_train(log, save_home=save_home)
+        print(f"seed {seed} finished")
+        print()

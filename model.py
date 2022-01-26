@@ -12,8 +12,8 @@ class primary_encoder(nn.Module):
         super(primary_encoder, self).__init__()
 
         if encoder_type == "electra":
-            # options_name = "google/electra-base-discriminator"
-            options_name = "./electra-base-discriminator"
+            options_name = "google/electra-base-discriminator"
+            # options_name = "./electra-base-discriminator"
             self.encoder_supcon = ElectraModel.from_pretrained(options_name, num_labels=emotion_size)
             self.encoder_supcon.encoder.config.gradient_checkpointing = True
 
@@ -46,8 +46,8 @@ class weighting_network(nn.Module):
         super(weighting_network, self).__init__()
 
         if encoder_type == "electra":
-            # options_name = "google/electra-base-discriminator"
-            options_name = "./electra-base-discriminator"
+            options_name = "google/electra-base-discriminator"
+            # options_name = "./electra-base-discriminator"
             self.encoder_supcon_2 = ElectraForSequenceClassification.from_pretrained(options_name,
                                                                                      num_labels=emotion_size)
 

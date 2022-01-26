@@ -1,0 +1,50 @@
+{
+  "param": {
+    "temperature": 0.3,
+    "run_name": "",
+    "dataset": "ed",
+    "main_learning_rate": 2e-05,
+    "batch_size": 10,
+    "hidden_size": 768,
+    "nepoch": 5,
+    "criterion": "emo_acc",
+    "lambda_loss": 0.5,
+    "loss_type": "lcl",
+    "label_list": [
+      "Anxious",
+      "Apprehensive",
+      "Afraid",
+      "Terrified"
+    ],
+    "decay": 0.01,
+    "model_type": "electra",
+    "emotion_size": 4,
+    "SEED": 2
+  },
+  "train_loss_1": 0.7343636875988072,
+  "train_loss_2": 0.5039102163834449,
+  "stop_epoch": 2,
+  "stop_step": 658,
+  "valid_emo_f1_score_1": {
+    "macro": 58.6347749633674,
+    "weighted": 58.666926379837825
+  },
+  "test_emo_f1_score_1": {
+    "macro": 54.540226430041905,
+    "weighted": 54.88244070488402
+  },
+  "valid_emo_accuracy_1": 59.57446808510638,
+  "test_emo_accuracy_1": 55.972696245733786,
+  "train_emo_accuracy_1": 56.58119708656246,
+  "valid_emo_f1_score_2": {
+    "macro": 59.73510558069381,
+    "weighted": 59.293141151714366
+  },
+  "test_emo_f1_score_2": {
+    "macro": 53.736713965191804,
+    "weighted": 53.84455268465802
+  },
+  "valid_emo_accuracy_2": 60.182370820668694,
+  "test_emo_accuracy_2": 55.63139931740614,
+  "train_emo_accuracy_2": 60.14957314678746
+}
