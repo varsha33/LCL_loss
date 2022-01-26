@@ -3,8 +3,8 @@ all_datasets = ['ed', 'emoint', 'goemotions', 'isear', 'sst-2', 'sst-5']
 ## search space
 seach_space = {
     'main_learning_rate': [1e-5, 2e-5, 3e-5],
-    'temperature'       : [0.1, 0.3, 0.5],
-    'lambda_loss'       : [0.1, 0.2, 0.3, 0.4, 0.5],
+    'temperature': [0.1, 0.3, 0.5],
+    'lambda_loss': [0.1, 0.2, 0.3, 0.4, 0.5],
 }
 
 dataset = "sst-2"
@@ -42,9 +42,9 @@ SEED = [0]
 SEED = [0, 1, 2, 3, 4]
 
 param = {"temperature": temperature, "run_name": run_name, "dataset": dataset, "main_learning_rate": main_learning_rate,
-         "batch_size" : batch_size, "hidden_size": hidden_size, "nepoch": nepoch, "criterion": criterion,
+         "batch_size": batch_size, "hidden_size": hidden_size, "nepoch": nepoch, "criterion": criterion,
          "lambda_loss": lambda_loss, "loss_type": loss_type, "label_list": label_list,
-         "decay"      : decay, "model_type": model_type}
+         "decay": decay, "model_type": model_type}
 
 
 def get_param(dataset):
@@ -63,9 +63,10 @@ def get_param(dataset):
     else:
         main_learning_rate = [2e-5]
 
-    param = {"temperature": temperature, "run_name": run_name, "dataset": dataset, "main_learning_rate": main_learning_rate,
-             "batch_size" : batch_size, "hidden_size": hidden_size, "nepoch": nepoch, "criterion": criterion,
+    param = {"temperature": temperature, "run_name": run_name, "dataset": dataset,
+             "main_learning_rate": main_learning_rate,
+             "batch_size": batch_size, "hidden_size": hidden_size, "nepoch": nepoch, "criterion": criterion,
              "lambda_loss": lambda_loss, "loss_type": loss_type, "label_list": label_list,
-             "decay"      : decay, "model_type": model_type}
+             "decay": decay, "model_type": model_type}
 
     return param

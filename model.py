@@ -1,7 +1,8 @@
+import transformers
 from torch import nn
 from torch.nn import functional as F
 from transformers import ElectraForSequenceClassification, ElectraModel
-import transformers
+
 transformers.logging.set_verbosity(transformers.logging.ERROR)
 
 

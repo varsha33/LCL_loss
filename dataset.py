@@ -17,7 +17,7 @@ class Emo_dataset(Dataset):
 
     def __getitem__(self, index):
 
-        item = {'idx': [2*index, 2*index+1]}
+        item = {'idx': [2 * index, 2 * index + 1]}
 
         if self.training and self.w_aug:
             item["cause"] = self.data["tokenized_cause"][index]
@@ -42,7 +42,7 @@ class SST_dataset(Dataset):
 
     def __getitem__(self, index):
 
-        item = {'idx': [2*index, 2*index+1]}
+        item = {'idx': [2 * index, 2 * index + 1]}
 
         if self.training and self.w_aug:
             item["review"] = self.data["tokenized_review"][index]
