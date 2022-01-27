@@ -1,0 +1,50 @@
+{
+    "param": {
+        "temperature": 0.3,
+        "run_name": "",
+        "dataset": "ed",
+        "main_learning_rate": 2e-05,
+        "batch_size": 10,
+        "hidden_size": 768,
+        "nepoch": 5,
+        "criterion": "emo_acc",
+        "lambda_loss": 0.5,
+        "loss_type": "lcl",
+        "label_list": [
+            "Angry",
+            "Ashamed",
+            "Furious",
+            "Guilty"
+        ],
+        "decay": 0.01,
+        "model_type": "electra",
+        "emotion_size": 32,
+        "SEED": 3
+    },
+    "train_loss_1": 0.7428177717781852,
+    "train_loss_2": 0.43249512123472894,
+    "stop_epoch": 4,
+    "stop_step": 1208,
+    "valid_emo_f1_score_1": {
+        "macro": 57.31264540124269,
+        "weighted": 56.67545008971655
+    },
+    "test_emo_f1_score_1": {
+        "macro": 50.94094997404627,
+        "weighted": 50.21001956551409
+    },
+    "valid_emo_accuracy_1": 56.95364238410596,
+    "test_emo_accuracy_1": 50.53003533568904,
+    "train_emo_accuracy_1": 63.7448564301793,
+    "valid_emo_f1_score_2": {
+        "macro": 58.30384450797331,
+        "weighted": 57.80487916259545
+    },
+    "test_emo_f1_score_2": {
+        "macro": 54.541092244644716,
+        "weighted": 54.603590446901315
+    },
+    "valid_emo_accuracy_2": 57.94701986754967,
+    "test_emo_accuracy_2": 54.77031802120141,
+    "train_emo_accuracy_2": 64.42386880725499
+}
