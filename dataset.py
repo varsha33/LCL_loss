@@ -76,33 +76,33 @@ def get_dataloader(batch_size, dataset, seed=None, w_aug=True, label_list=None):
 
         # if using subset, change this part to input the correct data file
 
-        if "sst-" in dataset:
-            train_dataset = SST_dataset(data["train"], training=True, w_aug=w_aug)
-            valid_dataset = SST_dataset(data["dev"], training=False, w_aug=w_aug)
-            test_dataset = SST_dataset(data["test"], training=False, w_aug=w_aug)
-        else:
-            train_dataset = Emo_dataset(data["train"], training=True, w_aug=w_aug)
-            valid_dataset = Emo_dataset(data["valid"], training=False, w_aug=w_aug)
-            test_dataset = Emo_dataset(data["test"], training=False, w_aug=w_aug)
+    if "sst-" in dataset:
+        train_dataset = SST_dataset(data["train"], training=True, w_aug=w_aug)
+        valid_dataset = SST_dataset(data["dev"], training=False, w_aug=w_aug)
+        test_dataset = SST_dataset(data["test"], training=False, w_aug=w_aug)
+    else:
+        train_dataset = Emo_dataset(data["train"], training=True, w_aug=w_aug)
+        valid_dataset = Emo_dataset(data["valid"], training=False, w_aug=w_aug)
+        test_dataset = Emo_dataset(data["test"], training=False, w_aug=w_aug)
 
-        if "sst-" in dataset:
-            collate_fn = collate_fn_sentiment
-            collate_fn_w_aug = collate_fn_w_aug_sentiment
-        else:
-            collate_fn = collate_fn_emo
-            collate_fn_w_aug = collate_fn_w_aug_emo
+    if "sst-" in dataset:
+        collate_fn = collate_fn_sentiment
+        collate_fn_w_aug = collate_fn_w_aug_sentiment
+    else:
+        collate_fn = collate_fn_emo
+        collate_fn_w_aug = collate_fn_w_aug_emo
 
-        if w_aug:
-            train_iter = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True,
-                                                     collate_fn=collate_fn_w_aug, num_workers=0)
-        else:
-            train_iter = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True,
-                                                     collate_fn=collate_fn, num_workers=0)
+    if w_aug:
+        train_iter = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True,
+                                                 collate_fn=collate_fn_w_aug, num_workers=0)
+    else:
+        train_iter = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True,
+                                                 collate_fn=collate_fn, num_workers=0)
 
-        valid_iter = torch.utils.data.DataLoader(valid_dataset, batch_size=1, shuffle=False, collate_fn=collate_fn,
-                                                 num_workers=0)
+    valid_iter = torch.utils.data.DataLoader(valid_dataset, batch_size=1, shuffle=False, collate_fn=collate_fn,
+                                             num_workers=0)
 
-        test_iter = torch.utils.data.DataLoader(test_dataset, batch_size=1, shuffle=False, collate_fn=collate_fn,
-                                                num_workers=0)
+    test_iter = torch.utils.data.DataLoader(test_dataset, batch_size=1, shuffle=False, collate_fn=collate_fn,
+                                            num_workers=0)
 
-        return train_iter, valid_iter, test_iter
+    return train_iter, valid_iter, test_iter
