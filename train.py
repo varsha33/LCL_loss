@@ -332,7 +332,7 @@ if __name__ == '__main__':
     ## reseeding before every run while tuning
 
     if log.param.dataset == "ed":
-        log.param.emotion_size = 32
+        log.param.emotion_size = len(log.param.label_list) if log.param.label_list else 32
     elif log.param.dataset == "emoint":
         log.param.emotion_size = 4
     elif log.param.dataset == "goemotions":

@@ -63,16 +63,16 @@ def get_dataloader(batch_size, dataset, seed=None, w_aug=True, label_list=None):
         data = pickle.load(f)
     if label_list and dataset == "ed":
         label_emo_set = set(map(lambda label: lookup.ed_label_dict[label], label_list))
-        # label_emo_list = list(label_emo_set)
+        label_emo_list = list(label_emo_set)
         for dataset_type in data:
             emotions = data[dataset_type]["emotion"]
             filtered_indices = [idx for idx in range(len(emotions)) if
                                 (emotions[idx][0] if type(emotions[idx]) is list else emotions[idx]) in label_emo_set]
             for key, lists in data[dataset_type].items():
                 data[dataset_type][key] = [data[dataset_type][key][i] for i in filtered_indices]
-            # data[dataset_type]["emotion"] = [
-            #     [label_emo_list.index(old_emo[0]), label_emo_list.index(old_emo[1])] if type(
-            #         old_emo) is list else label_emo_list.index(old_emo) for old_emo in data[dataset_type]["emotion"]]
+            data[dataset_type]["emotion"] = [
+                [label_emo_list.index(old_emo[0]), label_emo_list.index(old_emo[1])] if type(
+                    old_emo) is list else label_emo_list.index(old_emo) for old_emo in data[dataset_type]["emotion"]]
 
         # if using subset, change this part to input the correct data file
 
