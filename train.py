@@ -1,8 +1,9 @@
+import argparse
 import json
 import os
 import random
 import time
-import argparse
+
 import numpy as np
 import torch
 import torch.utils.data
@@ -60,7 +61,8 @@ def train(epoch, train_loader, model_main, model_helper, loss_function, optimize
         emo_pred_2 = model_helper(text, attn)
 
         loss_1 = (loss_function["lambda_loss"] * loss_function["emotion"](emo_pred_1, emotion)) + (
-                (1 - loss_function["lambda_loss"]) * loss_function["contrastive"](supcon_feature_1, emotion, torch.softmax(emo_pred_2, dim=1)))
+                (1 - loss_function["lambda_loss"]) * loss_function["contrastive"](supcon_feature_1, emotion,
+                                                                                  torch.softmax(emo_pred_2, dim=1)))
         loss_2 = loss_function["lambda_loss"] * loss_function["emotion"](emo_pred_2, emotion)
 
         loss = loss_1 + loss_2
@@ -117,7 +119,7 @@ def test(epoch, test_loader, model_main, model_helper, loss_function, log):
     test_loss = 0
     total_epoch_acc_1, total_epoch_acc_2 = 0, 0
     total_emo_pred_1, total_emo_pred_2, total_emo_true, total_pred_prob_1, total_pred_prob_2 = [], [], [], [], []
-    save_pred = {"true"       : [], "pred_1": [], "pred_2": [], "pred_prob_1": [],
+    save_pred = {"true": [], "pred_1": [], "pred_2": [], "pred_prob_1": [],
                  "pred_prob_2": [], "feature": []}
     acc_curve_1, acc_curve_2 = [], []
     total_feature = []
@@ -196,7 +198,8 @@ def lcl_train(log, save_home):
     torch.cuda.manual_seed_all(log.param.SEED)
     save_home = save_home + "/" + str(log.param.SEED)
 
-    train_data, valid_data, test_data = get_dataloader(log.param.batch_size, log.param.dataset, w_aug=True, label_list=log.param.label_list)
+    train_data, valid_data, test_data = get_dataloader(log.param.batch_size, log.param.dataset, w_aug=True,
+                                                       label_list=log.param.label_list)
 
     losses = {"contrastive": loss.LCL(temperature=log.param.temperature), "emotion": nn.CrossEntropyLoss(),
               "lambda_loss": log.param.lambda_loss}
@@ -211,7 +214,7 @@ def lcl_train(log, save_home):
     num_training_steps = int(len(train_data) * log.param.nepoch)
     no_decay = ['bias', 'LayerNorm.weight']
     optimizer_grouped_parameters = [
-        {'params'      : [p for n, p in total_params if not any(nd in n for nd in no_decay)],
+        {'params': [p for n, p in total_params if not any(nd in n for nd in no_decay)],
          'weight_decay': log.param.decay},
         {'params': [p for n, p in total_params if any(nd in n for nd in no_decay)], 'weight_decay': 0.0}]
     optimizer = AdamW(optimizer_grouped_parameters, lr=log.param.main_learning_rate)
@@ -256,7 +259,7 @@ def lcl_train(log, save_home):
         os.makedirs(save_home, exist_ok=True)
         with open(save_home + "/acc_curve.json", 'w') as fp:
             json.dump({"train_acc_curve_1": total_train_acc_curve_1, "train_acc_curve_2": total_train_acc_curve_2,
-                       "val_acc_curve_1"  : total_val_acc_curve_1, "val_acc_curve_2": total_val_acc_curve_2}, fp,
+                       "val_acc_curve_1": total_val_acc_curve_1, "val_acc_curve_2": total_val_acc_curve_2}, fp,
                       indent=4)
         fp.close()
 
@@ -293,19 +296,19 @@ def lcl_train(log, save_home):
             log.test_emo_accuracy_2 = test_acc_2
             log.train_emo_accuracy_2 = train_acc_2
 
-            ## load the model
+            # dump the model
             with open(save_home + "/log.json", 'w') as fp:
                 json.dump(dict(log), fp, indent=4)
-            fp.close()
 
             with open(save_home + "/feature.json", 'w') as fp:
                 json.dump(test_save_pred, fp, indent=4)
-            fp.close()
+        print()
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", type=str, default='isear', choices=['ed', 'emoint', 'goemotions', 'isear', 'sst-2', 'sst-5'])
+    parser.add_argument("--dataset", type=str, default='isear',
+                        choices=['ed', 'emoint', 'goemotions', 'isear', 'sst-2', 'sst-5'])
     args = parser.parse_args()
 
     tuning_param = train_config.tuning_param
@@ -315,41 +318,37 @@ if __name__ == '__main__':
 
     param_list = [param[i] for i in tuning_param]
     param_list = [tuple(tuning_param)] + list(iter_product(*param_list))  ## [(param_name),(param combinations)]
+    log = edict()
+    log.param = param
 
+    model_run_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
+    if log.param.run_name != "":
+        save_home = "./save/final/" + log.param.dataset + "/" + log.param.run_name + "/" + log.param.loss_type + "/" + model_run_time + "/"
+    else:
+        save_home = "./save/final/" + log.param.dataset + "/" + log.param.loss_type + "/" + model_run_time + "/"
 
+    if log.param.run_name == "subset":
+        log.param.emotion_size = int(log.param.label_list.split("-")[0])
+    ## reseeding before every run while tuning
+
+    if log.param.dataset == "ed":
+        log.param.emotion_size = 32
+    elif log.param.dataset == "emoint":
+        log.param.emotion_size = 4
+    elif log.param.dataset == "goemotions":
+        log.param.emotion_size = 27
+    elif log.param.dataset == "isear":
+        log.param.emotion_size = 7
+    elif log.param.dataset == "sst-2":
+        log.param.emotion_size = 2
+    elif log.param.dataset == "sst-5":
+        log.param.emotion_size = 5
     for param_com in param_list[1:]:  # as first element is just name
+        for num, val in enumerate(param_com):
+            log.param[param_list[0][num]] = val
 
-        log = edict()
-        log.param = param
-
-        model_run_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
-        if log.param.run_name != "":
-            save_home = "./save/final/" + log.param.dataset + "/" + log.param.run_name + "/" + log.param.loss_type + "/" + model_run_time + "/"
-        else:
-            save_home = "./save/final/" + log.param.dataset + "/" + log.param.loss_type + "/" + model_run_time + "/"
-
-        for seed in seeds:
-            log.param.SEED = seed
-
-            for num, val in enumerate(param_com):
-                log.param[param_list[0][num]] = val
-            if log.param.run_name == "subset":
-                log.param.emotion_size = int(log.param.label_list.split("-")[0])
-            ## reseeding before every run while tuning
-
-            if log.param.dataset == "ed":
-                log.param.emotion_size = 32
-            elif log.param.dataset == "emoint":
-                log.param.emotion_size = 4
-            elif log.param.dataset == "goemotions":
-                log.param.emotion_size = 27
-            elif log.param.dataset == "isear":
-                log.param.emotion_size = 7
-            elif log.param.dataset == "sst-2":
-                log.param.emotion_size = 2
-            elif log.param.dataset == "sst-5":
-                log.param.emotion_size = 5
-
-            lcl_train(log, save_home=save_home)
-
-            a = 1
+    for seed in seeds:
+        log.param.SEED = seed
+        lcl_train(log, save_home=save_home)
+        print(f"seed {seed} finished")
+        print()

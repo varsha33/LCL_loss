@@ -1,16 +1,12 @@
-import pandas as pd
-import pickle
 import argparse
-import numpy as np
-import re
-import random
+import pickle
+
 import nlpaug.augmenter.word as naw
+import pandas as pd
 ## torch packages
-import torch
-from transformers import BertTokenizer, AutoTokenizer
+from transformers import AutoTokenizer
 
 ## custom packages
-import tweet
 
 aug = naw.SynonymAug(aug_src='wordnet')
 
