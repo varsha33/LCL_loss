@@ -44,7 +44,7 @@ python train.py --dataset ed
 Labels for each subset. Use them in `config.py -> label_list` to trian only on a
 subset of classes.
 
-_Hint_: the folloing code snippets are copy-paste ready.
+_Hint_: the following code snippets are copy-paste ready.
 
 ### EmpatheticDialogues
 
