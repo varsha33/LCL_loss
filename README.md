@@ -28,14 +28,41 @@ python train.py
 ```
 
 ### Train with label subsets
+
 Change the `label_list` to your designed labels (e.g., ["Anticipating", "Excited",
 "Hopeful", "Guilty"].)
 
-For example, to train a subset of label of EmpatheticDialogues, after setting 
+For example, to train a subset of label of EmpatheticDialogues, after setting
 `label_list`, run
+
 ```
 python train.py --dataset ed 
 ```
+
+## Data Subset
+
+Labels for each subset. Use them in `config.py -> label_list` to trian only on a
+subset of classes.
+
+_Hint_: the folloing code snippets are copy-paste ready.
+
+### EmpatheticDialogues
+
+32-classes: `None` (full dataset)
+
+16-classes: `["Afraid", "Angry", "Annoyed", "Anxious", "Confident","Disappointed", "Disgusted", "Excited", "Grateful", "Hopeful", "Impressed", "Lonely", "Proud", "Sad", "Surprised", "Terrified"]`
+
+8-classes: `["Angry", "Afraid", "Ashamed", "Disgusted", "Guilty", "Proud", "Sad", "Surprised"]`
+
+4-easy: `["Angry", "Afraid", "Joyful", "Sad"]`
+
+4-hard-a: `["Anxious", "Apprehensive", "Afraid", "Terrified"]`
+
+4-hard-b: `["Devastated", "Nostalgic", "Sad", "Sentimental"]`
+
+4-hard-c: `["Angry", "Ashamed", "Furious", "Guilty"]`
+
+4-hard-d: `["Anticipating", "Excited", "Hopeful", "Guilty"]`
 
 ## Credits
 
