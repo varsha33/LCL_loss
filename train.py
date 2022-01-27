@@ -309,12 +309,14 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str, default='isear',
                         choices=['ed', 'emoint', 'goemotions', 'isear', 'sst-2', 'sst-5'])
+    parser.add_argument("--run_name", type=str, default='')
     args = parser.parse_args()
 
     tuning_param = train_config.tuning_param
     seeds = train_config.SEED
 
     param = train_config.get_param(args.dataset)
+    param['run_name'] = args.run_name
 
     param_list = [param[i] for i in tuning_param]
     param_list = [tuple(tuning_param)] + list(iter_product(*param_list))  ## [(param_name),(param combinations)]
