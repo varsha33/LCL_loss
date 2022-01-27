@@ -36,7 +36,7 @@ For example, to train a subset of label of EmpatheticDialogues, after setting
 `label_list`, run
 
 ```
-python train.py --dataset ed 
+python train.py --dataset ed --run_name 4-easy --label_list "Angry" "Afraid" "Joyful" "Sad"
 ```
 
 ## Data Subset
