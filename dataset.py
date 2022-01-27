@@ -61,7 +61,7 @@ class SST_dataset(Dataset):
 def get_dataloader(batch_size, dataset, seed=None, w_aug=True, label_list=None):
     with open('./preprocessed_data/' + dataset + f'_{"waug_" if w_aug else ""}preprocessed_bert.pkl', "rb") as f:
         data = pickle.load(f)
-    if label_list:
+    if label_list and dataset == "ed":
         label_emo_set = set(map(lambda label: lookup.ed_label_dict[label], label_list))
         # label_emo_list = list(label_emo_set)
         for dataset_type in data:
