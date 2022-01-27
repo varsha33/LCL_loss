@@ -1,8 +1,9 @@
+import argparse
 import json
 import os
 import random
 import time
-import argparse
+
 import numpy as np
 import torch
 import torch.utils.data
@@ -12,19 +13,13 @@ from torch import nn
 from transformers import AdamW, get_linear_schedule_with_warmup
 
 import config as train_config
-import loss as loss
 from dataset import get_dataloader
+from loss import SupConLoss
 from model import primary_encoder
 from util import iter_product
 
 
-def update_bank(bank, idx, pred, alpha=0.9):
-    bank[idx] = alpha * bank[idx] + (1-alpha) * pred
-
-
-
-
-def train(epoch, train_loader, bank, model_main, loss_function, optimizer, lr_scheduler, log):
+def train(epoch, train_loader, model_main, loss_function, optimizer, lr_scheduler, log):
     model_main.cuda()
     model_main.train()
 
@@ -50,7 +45,7 @@ def train(epoch, train_loader, bank, model_main, loss_function, optimizer, lr_sc
         emotion = torch.tensor(emotion)
         emotion = torch.autograd.Variable(emotion).long()
 
-        if emotion.size()[0] is not train_batch_size:  # Last batch may have length different than log.param.batch_size
+        if emotion.size()[0] is not train_batch_size:  # Last batch may have length different from log.param.batch_size
             continue
 
         if torch.cuda.is_available():
@@ -60,17 +55,18 @@ def train(epoch, train_loader, bank, model_main, loss_function, optimizer, lr_sc
 
         # class_weights,emo_pred,supcon_feature= model(text,attn)
         emo_pred_1, supcon_feature_1 = model_main(text, attn)
+        print(emo_pred_1)
+        print(emotion)
+        if type(loss_function) is nn.CrossEntropyLoss:
+            loss_1 = loss_function(emo_pred_1, emotion)
+        elif type(loss_function) is SupConLoss:
+            loss_1 = loss_function(supcon_feature_1, emotion)
+        else:
+            raise ValueError("Only cross entropy and supervised contrastive loss are supported.")
 
-        update_bank(bank, batch['idx'], torch.softmax(emo_pred_1.detach(), dim=1), log.param.alpha)
-        emo_pred_2 = bank[batch['idx']]
+        train_loss_1 += loss_1.cpu().item()
 
-        loss_1 = (loss_function["lambda_loss"] * loss_function["emotion"](emo_pred_1, emotion)) + \
-                 ((1 - loss_function["lambda_loss"]) * loss_function["contrastive"](supcon_feature_1, emotion, emo_pred_2))
-
-        loss = loss_1
-        train_loss_1 += loss_1.item()
-
-        loss.backward()
+        loss_1.backward()
         nn.utils.clip_grad_norm_(model_main.parameters(), max_norm=1.0)
         optimizer.step()
         model_main.zero_grad()
@@ -81,7 +77,8 @@ def train(epoch, train_loader, bank, model_main, loss_function, optimizer, lr_sc
         steps += 1
 
         if steps % 100 == 0:
-            print(f'Epoch: {epoch:02}, Idx: {idx + 1}, Training Loss_1: {loss_1.item():.4f}, Time taken: {((time.time() - start_train_time) / 60): .2f} min')
+            print(
+                f'Epoch: {epoch:02}, Idx: {idx + 1}, Training Loss_1: {loss_1.item():.4f}, Time taken: {((time.time() - start_train_time) / 60): .2f} min')
             start_train_time = time.time()
 
         emo_true_list = emotion.data.detach().cpu().tolist()
@@ -159,23 +156,22 @@ def test(epoch, test_loader, model_main, loss_function, log):
     return total_epoch_acc_1 / len(test_loader), f1_score_1, save_pred, acc_curve_1
 
 
-def lcl_train(log, data_loaders=None, save_home=None, test_flag=True):
+def lcl_train(log, loss_for_emotion, data_loaders=None, save_home=None, test_flag=True):
+    print(f"loss function is {str(loss_for_emotion)}")
     np.random.seed(log.param.SEED)
     random.seed(log.param.SEED)
     torch.manual_seed(log.param.SEED)
     torch.cuda.manual_seed(log.param.SEED)
     torch.cuda.manual_seed_all(log.param.SEED)
 
-    if save_home is not  None:
+    if save_home is not None:
         save_home = save_home + "/" + str(log.param.SEED)
 
     if data_loaders is None:
-        train_data, valid_data, test_data = get_dataloader(log.param.batch_size, log.param.dataset, w_aug=True, label_list=log.param.label_list)
+        train_data, valid_data, test_data = get_dataloader(log.param.batch_size, log.param.dataset, w_aug=True,
+                                                           label_list=log.param.label_list)
     else:
         train_data, valid_data, test_data = data_loaders
-
-    losses = {"contrastive": loss.LCL(temperature=log.param.temperature), "emotion": nn.CrossEntropyLoss(),
-              "lambda_loss": log.param.lambda_loss}
 
     model_main = primary_encoder(log.param.batch_size, log.param.hidden_size, log.param.emotion_size,
                                  log.param.model_type)
@@ -184,7 +180,7 @@ def lcl_train(log, data_loaders=None, save_home=None, test_flag=True):
     num_training_steps = int(len(train_data) * log.param.nepoch)
     no_decay = ['bias', 'LayerNorm.weight']
     optimizer_grouped_parameters = [
-        {'params'      : [p for n, p in total_params if not any(nd in n for nd in no_decay)],
+        {'params': [p for n, p in total_params if not any(nd in n for nd in no_decay)],
          'weight_decay': log.param.decay},
         {'params': [p for n, p in total_params if any(nd in n for nd in no_decay)], 'weight_decay': 0.0}]
     optimizer = AdamW(optimizer_grouped_parameters, lr=log.param.main_learning_rate)
@@ -193,17 +189,14 @@ def lcl_train(log, data_loaders=None, save_home=None, test_flag=True):
     total_train_acc_curve_1, total_val_acc_curve_1 = [], []
 
     N = len(train_data.dataset)
-    bank = torch.ones((2*N, log.param.emotion_size), requires_grad=False).cuda()
-    bank = bank / log.param.emotion_size
-
+    best_criterion = 0
 
     for epoch in range(1, log.param.nepoch + 1):
 
         train_loss_1, train_acc_1, train_acc_curve_1, = train(epoch,
                                                               train_data,
-                                                              bank,
                                                               model_main,
-                                                              losses,
+                                                              loss_for_emotion,
                                                               optimizer,
                                                               lr_scheduler,
                                                               log)
@@ -211,28 +204,20 @@ def lcl_train(log, data_loaders=None, save_home=None, test_flag=True):
         val_acc_1, val_f1_1, val_save_pred, val_acc_curve_1, = test(epoch,
                                                                     valid_data,
                                                                     model_main,
-                                                                    losses, log)
-
-
+                                                                    loss_for_emotion, log)
 
         total_train_acc_curve_1.extend(train_acc_curve_1)
         total_val_acc_curve_1.extend(val_acc_curve_1)
-
-        # lr_scheduler_1.step()
 
         print('====> Epoch: {} Train loss_1: {:.4f}'.format(epoch, train_loss_1))
 
         if save_home is not None:
             os.makedirs(save_home, exist_ok=True)
             with open(save_home + "/acc_curve.json", 'w') as fp:
-                json.dump({"train_acc_curve_1": total_train_acc_curve_1, "val_acc_curve_1"  : total_val_acc_curve_1}, fp, indent=4)
-            fp.close()
-
-        if epoch == 1:
-            best_criterion = 0
-
+                json.dump({"train_acc_curve_1": total_train_acc_curve_1, "val_acc_curve_1": total_val_acc_curve_1}, fp,
+                          indent=4)
         is_best = val_acc_1 > best_criterion
-        best_criterion = max(val_acc_1, best_criterion)
+        best_criterion = val_acc_1 if is_best else best_criterion
 
         print(f'Valid Accuracy: {val_acc_1:.2f} Emotion Valid F1: {val_f1_1["macro"]:.2f}')
 
@@ -251,7 +236,7 @@ def lcl_train(log, data_loaders=None, save_home=None, test_flag=True):
                 test_acc_1, test_f1_1, test_save_pred, test_acc_curve_1, = test(epoch,
                                                                                 test_data,
                                                                                 model_main,
-                                                                                losses,
+                                                                                loss_for_emotion,
                                                                                 log)
                 print(f'Test Accuracy: {test_acc_1:.2f} Emotion Test F1: {test_f1_1["macro"]:.2f}')
 
@@ -264,25 +249,27 @@ def lcl_train(log, data_loaders=None, save_home=None, test_flag=True):
                     json.dump(dict(log), fp, indent=4)
                 fp.close()
 
-                # with open(save_home + "/feature.json", 'w') as fp:
-                #     json.dump(test_save_pred, fp, indent=4)
-                # fp.close()
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", type=str, default='isear', choices=['ed', 'emoint', 'goemotions', 'isear', 'sst-2', 'sst-5'])
+    parser.add_argument("--dataset", type=str, default='isear',
+                        choices=['ed', 'emoint', 'goemotions', 'isear', 'sst-2', 'sst-5'])
     parser.add_argument("--run_name", type=str, default='')
-    parser.add_argument("--alpha", type=float, default=0.9)
+    parser.add_argument('--label_list', type=str, nargs='+', default=[])
+    parser.add_argument("--loss_function", type=str, default="cross_entropy", choices=["cross_entropy", "scl"])
     args = parser.parse_args()
 
     tuning_param = train_config.tuning_param
     seeds = train_config.SEED
 
     param = train_config.get_param(args.dataset)
-    param['alpha'] = args.alpha
+    if len(args.label_list) > 0:
+        param['label_list'] = args.label_list
     param['run_name'] = args.run_name
+    param['loss_function'] = nn.CrossEntropyLoss() if args.loss_function == "cross_entropy" else SupConLoss()
 
+    param_list = [param[i] for i in tuning_param]
+    param_list = [tuple(tuning_param)] + list(iter_product(*param_list))  ## [(param_name),(param combinations)]
     log = edict()
     log.param = param
 
@@ -292,34 +279,28 @@ if __name__ == '__main__':
     else:
         save_home = "./save/final/" + log.param.dataset + "/" + log.param.loss_type + "/" + model_run_time + "/"
 
-    data_loaders = get_dataloader(log.param.batch_size, log.param.dataset, w_aug=True, label_list=log.param.label_list)
+    if log.param.run_name == "subset":
+        log.param.emotion_size = int(log.param.label_list.split("-")[0])
+    ## reseeding before every run while tuning
 
-    param_list = [param[i] for i in tuning_param]
-    param_list = [tuple(tuning_param)] + list(iter_product(*param_list))  ## [(param_name),(param combinations)]
+    if log.param.dataset == "ed":
+        log.param.emotion_size = len(log.param.label_list) if log.param.label_list else 32
+    elif log.param.dataset == "emoint":
+        log.param.emotion_size = 4
+    elif log.param.dataset == "goemotions":
+        log.param.emotion_size = 27
+    elif log.param.dataset == "isear":
+        log.param.emotion_size = 7
+    elif log.param.dataset == "sst-2":
+        log.param.emotion_size = 2
+    elif log.param.dataset == "sst-5":
+        log.param.emotion_size = 5
     for param_com in param_list[1:]:  # as first element is just name
+        for num, val in enumerate(param_com):
+            log.param[param_list[0][num]] = val
 
-        for seed in seeds:
-            log.param.SEED = seed
-
-            for num, val in enumerate(param_com):
-                log.param[param_list[0][num]] = val
-            if log.param.run_name == "subset":
-                log.param.emotion_size = int(log.param.label_list.split("-")[0])
-            ## reseeding before every run while tuning
-
-            if log.param.dataset == "ed":
-                log.param.emotion_size = len(log.param.label_list) if log.param.label_list else 32
-            elif log.param.dataset == "emoint":
-                log.param.emotion_size = 4
-            elif log.param.dataset == "goemotions":
-                log.param.emotion_size = 27
-            elif log.param.dataset == "isear":
-                log.param.emotion_size = 7
-            elif log.param.dataset == "sst-2":
-                log.param.emotion_size = 2
-            elif log.param.dataset == "sst-5":
-                log.param.emotion_size = 5
-
-            lcl_train(log, data_loaders=data_loaders, save_home=save_home)
-
-            a = 1
+    for seed in seeds:
+        log.param.SEED = seed
+        lcl_train(log, log.param.loss_function, save_home=save_home)
+        print(f"seed {seed} finished")
+        print()

@@ -36,8 +36,8 @@ criterion = "emo_acc"
 loss_type = "lcl"
 model_type = "electra"
 run_name = ""  # for subset use "subset" else leave empty
-# Consider supporting datasets other than ed.
-label_list = ["Anticipating", "Excited", "Hopeful", "Guilty"]  # Only support dataset ed.
+# Only support dataset ed. Consider supporting datasets other than ed.
+label_list = ["Anxious", "Apprehensive", "Afraid", "Terrified"]
 
 SEED = [0, 1, 2, 3, 4]
 
