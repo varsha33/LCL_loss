@@ -39,6 +39,23 @@ For example, to train a subset of label of EmpatheticDialogues, after setting
 python train.py --dataset ed --run_name 4-easy --label_list "Angry" "Afraid" "Joyful" "Sad"
 ```
 
+### Train Baseline
+
+Similar to the training the main model.
+
+```shell
+python train_baseline.py
+```
+
+#### parameters
+
+All params in `train.py` is also available, in addition to
+
+- `--lambda_loss` valid value in [0.0, 1.0].
+Used for adjusting the percentage of Cross
+Entropy in the final loss function. Will use the `lambda_loss` in `config.py` if this
+is not configured.
+
 ## Data Subset
 
 Labels for each subset. Use them in `config.py -> label_list` to trian only on a

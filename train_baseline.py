@@ -55,12 +55,9 @@ def train(epoch, train_loader, model_main, loss_function, optimizer, lr_schedule
 
         # class_weights,emo_pred,supcon_feature= model(text,attn)
         emo_pred_1, supcon_feature_1 = model_main(text, attn)
-        if type(loss_function) is nn.CrossEntropyLoss:
-            loss_1 = loss_function(emo_pred_1, emotion)
-        elif type(loss_function) is SupConLoss:
-            loss_1 = loss_function(supcon_feature_1, emotion)
-        else:
-            raise ValueError("Only cross entropy and supervised contrastive loss are supported.")
+
+        loss_1 = (loss_function["lambda_loss"] * loss_function["emotion"](emo_pred_1, emotion)) + (
+                (1 - loss_function["lambda_loss"]) * loss_function["contrastive"](supcon_feature_1, emotion))
 
         train_loss_1 += loss_1.item()
 
@@ -152,8 +149,8 @@ def test(test_loader, model_main, log):
     return total_epoch_acc_1 / len(test_loader), f1_score_1, save_pred, acc_curve_1
 
 
-def lcl_train(log, loss_for_emotion, data_loaders=None, save_home=None, test_flag=True):
-    print(f"loss function is {str(loss_for_emotion)}")
+def baseline_train(log, lambda_loss, data_loaders=None, save_home=None, test_flag=True):
+    print(f"lambda loss is {lambda_loss}")
     np.random.seed(log.param.SEED)
     random.seed(log.param.SEED)
     torch.manual_seed(log.param.SEED)
@@ -185,13 +182,15 @@ def lcl_train(log, loss_for_emotion, data_loaders=None, save_home=None, test_fla
     total_train_acc_curve_1, total_val_acc_curve_1 = [], []
 
     best_criterion = 0
+    losses = {"contrastive": SupConLoss(temperature=log.param.temperature), "emotion": nn.CrossEntropyLoss(),
+              "lambda_loss": log.param.lambda_loss}
 
     for epoch in range(1, log.param.nepoch + 1):
 
         train_loss_1, train_acc_1, train_acc_curve_1, = train(epoch,
                                                               train_data,
                                                               model_main,
-                                                              loss_for_emotion,
+                                                              losses,
                                                               optimizer,
                                                               lr_scheduler,
                                                               log)
@@ -246,17 +245,19 @@ if __name__ == '__main__':
                         choices=['ed', 'emoint', 'goemotions', 'isear', 'sst-2', 'sst-5'])
     parser.add_argument("--run_name", type=str, default='')
     parser.add_argument('--label_list', type=str, nargs='+', default=[])
-    parser.add_argument("--loss_function", type=str, default="cross_entropy", choices=["cross_entropy", "scl"])
+    parser.add_argument("--lambda_loss", type=float)
     args = parser.parse_args()
 
     tuning_param = train_config.tuning_param
     seeds = train_config.SEED
 
     param = train_config.get_param(args.dataset)
-    if len(args.label_list) > 0:
+    if args.label_list:
         param['label_list'] = args.label_list
     param['run_name'] = args.run_name
-    param['loss_function'] = args.loss_function
+    if args.lambda_loss is not None:
+        assert 0.0 <= args.lambda_loss <= 1.0
+        param['lambda_loss'] = [args.lambda_loss]
 
     param_list = [param[i] for i in tuning_param]
     param_list = [tuple(tuning_param)] + list(iter_product(*param_list))  ## [(param_name),(param combinations)]
@@ -289,9 +290,10 @@ if __name__ == '__main__':
         for num, val in enumerate(param_com):
             log.param[param_list[0][num]] = val
 
+    log.param.loss_type = "baseline"
+
     for seed in seeds:
         log.param.SEED = seed
-        lcl_train(log, nn.CrossEntropyLoss() if log.param.loss_function == "cross_entropy" else SupConLoss(),
-                  save_home=save_home)
+        baseline_train(log, log.param.lambda_loss, save_home=save_home)
         print(f"seed {seed} finished")
         print()
