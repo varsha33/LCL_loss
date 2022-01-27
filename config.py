@@ -37,7 +37,8 @@ loss_type = "lcl"
 model_type = "electra"
 run_name = ""  # for subset use "subset" else leave empty
 # Only support dataset ed. Consider supporting datasets other than ed.
-label_list = ["Anxious", "Apprehensive", "Afraid", "Terrified"]
+label_list = ["Afraid", "Angry", "Annoyed", "Anxious", "Confident", "Disappointed", "Disgusted", "Excited", "Grateful",
+              "Hopeful", "Impressed", "Lonely", "Proud", "Sad", "Surprised", "Terrified"]
 
 SEED = [0, 1, 2, 3, 4]
 

@@ -55,8 +55,6 @@ def train(epoch, train_loader, model_main, loss_function, optimizer, lr_schedule
 
         # class_weights,emo_pred,supcon_feature= model(text,attn)
         emo_pred_1, supcon_feature_1 = model_main(text, attn)
-        print(emo_pred_1)
-        print(emotion)
         if type(loss_function) is nn.CrossEntropyLoss:
             loss_1 = loss_function(emo_pred_1, emotion)
         elif type(loss_function) is SupConLoss:
@@ -64,7 +62,7 @@ def train(epoch, train_loader, model_main, loss_function, optimizer, lr_schedule
         else:
             raise ValueError("Only cross entropy and supervised contrastive loss are supported.")
 
-        train_loss_1 += loss_1.cpu().item()
+        train_loss_1 += loss_1.item()
 
         loss_1.backward()
         nn.utils.clip_grad_norm_(model_main.parameters(), max_norm=1.0)
@@ -93,13 +91,11 @@ def train(epoch, train_loader, model_main, loss_function, optimizer, lr_schedule
         acc_1 = 100.0 * (num_corrects_1 / train_batch_size)
         acc_curve_1.append(acc_1.item())
         total_epoch_acc_1 += acc_1.item()
-
     return train_loss_1 / len(train_loader), total_epoch_acc_1 / len(train_loader), acc_curve_1
 
 
-def test(epoch, test_loader, model_main, loss_function, log):
+def test(test_loader, model_main, log):
     model_main.eval()
-    test_loss = 0
     total_epoch_acc_1 = 0
     total_emo_pred_1, total_emo_true, total_pred_prob_1 = [], [], []
     save_pred = {"true": [], "pred_1": [], "pred_prob_1": [], "feature": []}
@@ -188,7 +184,6 @@ def lcl_train(log, loss_for_emotion, data_loaders=None, save_home=None, test_fla
 
     total_train_acc_curve_1, total_val_acc_curve_1 = [], []
 
-    N = len(train_data.dataset)
     best_criterion = 0
 
     for epoch in range(1, log.param.nepoch + 1):
@@ -201,10 +196,9 @@ def lcl_train(log, loss_for_emotion, data_loaders=None, save_home=None, test_fla
                                                               lr_scheduler,
                                                               log)
 
-        val_acc_1, val_f1_1, val_save_pred, val_acc_curve_1, = test(epoch,
-                                                                    valid_data,
+        val_acc_1, val_f1_1, val_save_pred, val_acc_curve_1, = test(valid_data,
                                                                     model_main,
-                                                                    loss_for_emotion, log)
+                                                                    log)
 
         total_train_acc_curve_1.extend(train_acc_curve_1)
         total_val_acc_curve_1.extend(val_acc_curve_1)
@@ -223,7 +217,6 @@ def lcl_train(log, loss_for_emotion, data_loaders=None, save_home=None, test_fla
 
         if is_best:
             print("======> Best epoch <======")
-            patience_flag = 0
             log.train_loss_1 = train_loss_1
             log.stop_epoch = epoch
             log.stop_step = len(total_val_acc_curve_1)
@@ -233,21 +226,18 @@ def lcl_train(log, loss_for_emotion, data_loaders=None, save_home=None, test_fla
             log.valid_emo_accuracy_1 = val_acc_1
 
             if test_flag:
-                test_acc_1, test_f1_1, test_save_pred, test_acc_curve_1, = test(epoch,
-                                                                                test_data,
+                test_acc_1, test_f1_1, test_save_pred, test_acc_curve_1, = test(test_data,
                                                                                 model_main,
-                                                                                loss_for_emotion,
                                                                                 log)
                 print(f'Test Accuracy: {test_acc_1:.2f} Emotion Test F1: {test_f1_1["macro"]:.2f}')
 
                 log.test_emo_f1_score_1 = test_f1_1
                 log.test_emo_accuracy_1 = test_acc_1
 
-            ## load the model
+            # load the model
             if save_home is not None:
                 with open(save_home + "/log.json", 'w') as fp:
                     json.dump(dict(log), fp, indent=4)
-                fp.close()
 
 
 if __name__ == '__main__':
@@ -266,7 +256,7 @@ if __name__ == '__main__':
     if len(args.label_list) > 0:
         param['label_list'] = args.label_list
     param['run_name'] = args.run_name
-    param['loss_function'] = nn.CrossEntropyLoss() if args.loss_function == "cross_entropy" else SupConLoss()
+    param['loss_function'] = args.loss_function
 
     param_list = [param[i] for i in tuning_param]
     param_list = [tuple(tuning_param)] + list(iter_product(*param_list))  ## [(param_name),(param combinations)]
@@ -301,6 +291,7 @@ if __name__ == '__main__':
 
     for seed in seeds:
         log.param.SEED = seed
-        lcl_train(log, log.param.loss_function, save_home=save_home)
+        lcl_train(log, nn.CrossEntropyLoss() if log.param.loss_function == "cross_entropy" else SupConLoss(),
+                  save_home=save_home)
         print(f"seed {seed} finished")
         print()
