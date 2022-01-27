@@ -27,6 +27,16 @@ Set the parameters in config.py
 python train.py
 ```
 
+### Train with label subsets
+Change the `label_list` to your designed labels (e.g., ["Anticipating", "Excited",
+"Hopeful", "Guilty"].)
+
+For example, to train a subset of label of EmpatheticDialogues, after setting 
+`label_list`, run
+```
+python train.py --dataset ed 
+```
+
 ## Credits
 
 We took help from the following open source projects and we acknowledge their

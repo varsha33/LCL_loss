@@ -36,7 +36,7 @@ criterion = "emo_acc"
 run_name = ""  # for subset use "subset" else leave empty
 loss_type = "lcl"
 model_type = "electra"
-label_list = ["Angry", "Ashamed", "Furious", "Guilty"]
+label_list = ["Anticipating", "Excited", "Hopeful", "Guilty"]
 
 SEED = [0, 1, 2, 3, 4]
 
