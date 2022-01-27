@@ -242,11 +242,11 @@ def lcl_train(log, loss_for_emotion, data_loaders=None, save_home=None, test_fla
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", type=str, default='isear',
+    parser.add_argument("--dataset", type=str, default='ed',
                         choices=['ed', 'emoint', 'goemotions', 'isear', 'sst-2', 'sst-5'])
     parser.add_argument("--run_name", type=str, default='')
     parser.add_argument('--label_list', type=str, nargs='+', default=[])
-    parser.add_argument("--loss_function", type=str, default="cross_entropy", choices=["cross_entropy", "scl"])
+    parser.add_argument("--loss_function", type=str, default="scl", choices=["ce", "scl"])
     args = parser.parse_args()
 
     tuning_param = train_config.tuning_param
@@ -256,7 +256,7 @@ if __name__ == '__main__':
     if len(args.label_list) > 0:
         param['label_list'] = args.label_list
     param['run_name'] = args.run_name
-    param['loss_function'] = args.loss_function
+    param['loss_type'] = args.loss_function
 
     param_list = [param[i] for i in tuning_param]
     param_list = [tuple(tuning_param)] + list(iter_product(*param_list))  ## [(param_name),(param combinations)]
@@ -291,7 +291,7 @@ if __name__ == '__main__':
 
     for seed in seeds:
         log.param.SEED = seed
-        lcl_train(log, nn.CrossEntropyLoss() if log.param.loss_function == "cross_entropy" else SupConLoss(),
+        lcl_train(log, nn.CrossEntropyLoss() if log.param.loss_type == "ce" else SupConLoss(),
                   save_home=save_home)
         print(f"seed {seed} finished")
         print()
