@@ -71,3 +71,45 @@ def get_param(dataset):
              "decay": decay, "model_type": model_type}
 
     return param
+
+
+
+def get_param_new(dataset):
+    if dataset == 'ed':
+        main_learning_rate = [3e-05]
+        temperature = [0.1]
+        lambda_loss = [0.5]
+        alpha = 0.0
+    elif dataset == 'goemotions':
+        main_learning_rate = [2e-05]
+        temperature = [0.5]
+        lambda_loss = [0.1]
+        alpha = 0.9
+    elif dataset == 'emoint':
+        main_learning_rate = [3e-05]
+        temperature = [0.1]
+        lambda_loss = [0.3]
+        alpha = 0.6
+    elif dataset == 'isear':
+        main_learning_rate = [3e-05]
+        temperature = [0.3]
+        lambda_loss = [0.1]
+        alpha = 0.99
+    elif dataset == 'sst-2':
+        main_learning_rate = [3e-05]
+        temperature = [0.1]
+        lambda_loss = [0.2]
+        alpha = 0.99
+    elif dataset == 'sst-5':
+        main_learning_rate = [2e-05]
+        temperature = [0.1]
+        lambda_loss = [0.1]
+        alpha = 0.3
+
+    param = {"temperature": temperature, "run_name": run_name, "dataset": dataset,
+             "main_learning_rate": main_learning_rate, "alpha": alpha,
+             "batch_size": batch_size, "hidden_size": hidden_size, "nepoch": nepoch, "criterion": criterion,
+             "lambda_loss": lambda_loss, "loss_type": loss_type, "label_list": label_list,
+             "decay": decay, "model_type": model_type}
+
+    return param

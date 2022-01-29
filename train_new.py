@@ -272,25 +272,26 @@ def lcl_train(log, data_loaders=None, save_home=None, test_flag=True):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str, default='isear', choices=['ed', 'emoint', 'goemotions', 'isear', 'sst-2', 'sst-5'])
+    parser.add_argument('--label_list', type=str, nargs='+', default=[])
     parser.add_argument("--run_name", type=str, default='')
-    parser.add_argument("--alpha", type=float, default=0.9)
     args = parser.parse_args()
 
     tuning_param = train_config.tuning_param
     seeds = train_config.SEED
 
-    param = train_config.get_param(args.dataset)
-    param['alpha'] = args.alpha
+    param = train_config.get_param_new(args.dataset)
     param['run_name'] = args.run_name
+    if len(args.label_list) > 0:
+        param['label_list'] = args.label_list
 
     log = edict()
     log.param = param
 
     model_run_time = time.strftime("%Y_%m_%d_%H_%M_%S", time.localtime())
     if log.param.run_name != "":
-        save_home = "./save/final/" + log.param.dataset + "/" + log.param.run_name + "/" + log.param.loss_type + "/" + model_run_time + "/"
+        save_home = "./save/final/" + log.param.dataset + "/" + log.param.run_name + "/" + 's-lcl' + "/" + model_run_time + "/"
     else:
-        save_home = "./save/final/" + log.param.dataset + "/" + log.param.loss_type + "/" + model_run_time + "/"
+        save_home = "./save/final/" + log.param.dataset + "/" + 's-lcl' + "/" + model_run_time + "/"
 
     data_loaders = get_dataloader(log.param.batch_size, log.param.dataset, w_aug=True, label_list=log.param.label_list)
 
@@ -303,8 +304,6 @@ if __name__ == '__main__':
 
             for num, val in enumerate(param_com):
                 log.param[param_list[0][num]] = val
-            if log.param.run_name == "subset":
-                log.param.emotion_size = int(log.param.label_list.split("-")[0])
             ## reseeding before every run while tuning
 
             if log.param.dataset == "ed":
@@ -321,5 +320,4 @@ if __name__ == '__main__':
                 log.param.emotion_size = 5
 
             lcl_train(log, data_loaders=data_loaders, save_home=save_home)
-
-            a = 1
+            print(f"seed {seed} finished")

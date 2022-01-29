@@ -333,9 +333,6 @@ if __name__ == '__main__':
     else:
         save_home = "./save/final/" + log.param.dataset + "/" + log.param.loss_type + "/" + model_run_time + "/"
 
-    if log.param.run_name == "subset":
-        log.param.emotion_size = int(log.param.label_list.split("-")[0])
-    ## reseeding before every run while tuning
 
     if log.param.dataset == "ed":
         log.param.emotion_size = len(log.param.label_list) if log.param.label_list else 32
@@ -357,4 +354,3 @@ if __name__ == '__main__':
         log.param.SEED = seed
         lcl_train(log, save_home=save_home)
         print(f"seed {seed} finished")
-        print()
