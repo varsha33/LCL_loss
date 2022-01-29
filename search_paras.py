@@ -21,9 +21,9 @@ search_space = {
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", type=str, default='emoint', choices=['ed', 'emoint', 'goemotions', 'isear', 'sst-2', 'sst-5'])
+    parser.add_argument("--dataset", type=str, default='ed', choices=['ed', 'emoint', 'goemotions', 'isear', 'sst-2', 'sst-5'])
     parser.add_argument("--run_name", type=str, default='')
-    parser.add_argument("--n_repeats", type=int, default=3)
+    parser.add_argument("--n_repeats", type=int, default=5)
     parser.add_argument("--n_trials", type=int, default=250)
     parser.add_argument("--prev_results", type=str, default='')
     args = parser.parse_args()

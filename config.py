@@ -67,7 +67,7 @@ def get_param(dataset):
     param = {"temperature": temperature, "run_name": run_name, "dataset": dataset,
              "main_learning_rate": main_learning_rate,
              "batch_size": batch_size, "hidden_size": hidden_size, "nepoch": nepoch, "criterion": criterion,
-             "lambda_loss": lambda_loss, "loss_type": loss_type, "label_list": label_list,
+             "lambda_loss": lambda_loss, "loss_type": loss_type, "label_list": None,
              "decay": decay, "model_type": model_type}
 
     return param
@@ -109,7 +109,7 @@ def get_param_new(dataset):
     param = {"temperature": temperature, "run_name": run_name, "dataset": dataset,
              "main_learning_rate": main_learning_rate, "alpha": alpha,
              "batch_size": batch_size, "hidden_size": hidden_size, "nepoch": nepoch, "criterion": criterion,
-             "lambda_loss": lambda_loss, "loss_type": loss_type, "label_list": label_list,
+             "lambda_loss": lambda_loss, "loss_type": loss_type, "label_list": None,
              "decay": decay, "model_type": model_type}
 
     return param
