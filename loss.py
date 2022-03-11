@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
-from torch.nn import functional as F
-from pprint import pprint
+
 
 ### Credits https://github.com/HobbitLong/SupContrast
 class SupConLoss(nn.Module):
@@ -10,14 +9,13 @@ class SupConLoss(nn.Module):
         super(SupConLoss, self).__init__()
         self.temperature = temperature
 
-
     def forward(self, features, labels=None, mask=None):
 
         device = (torch.device('cuda')
                   if features.is_cuda
                   else torch.device('cpu'))
 
-        batch_size = features.shape[0] ## 2*N
+        batch_size = features.shape[0]  ## 2*N
 
         if labels is not None and mask is not None:
             raise ValueError('Cannot define both `labels` and `mask`')
@@ -31,11 +29,9 @@ class SupConLoss(nn.Module):
         else:
             mask = mask.float().to(device)
 
-
         contrast_feature = features
         anchor_feature = contrast_feature
-        anchor_count = 2 ## we have two views
-
+        anchor_count = 2  ## we have two views
 
         # compute logits
         anchor_dot_contrast = torch.div(
@@ -57,7 +53,6 @@ class SupConLoss(nn.Module):
 
         logits = anchor_dot_contrast - logits_max.detach()
 
-
         exp_logits = torch.exp(logits) * logits_mask
 
         ## log_prob = x - max(x1,..,xn) - logsumexp(x1,..,xn) the equation
@@ -71,14 +66,14 @@ class SupConLoss(nn.Module):
 
         return loss
 
+
 class LCL(nn.Module):
 
     def __init__(self, temperature=0.07):
         super(LCL, self).__init__()
         self.temperature = temperature
 
-
-    def forward(self, features, labels=None, weights=None,mask=None):
+    def forward(self, features, labels=None, weights=None, mask=None):
         """
         Returns:
             A loss scalar.
@@ -88,8 +83,7 @@ class LCL(nn.Module):
                   else torch.device('cpu'))
 
         batch_size = features.shape[0]
-        weights = F.softmax(weights,dim=1)
-
+        # weights = F.softmax(weights, dim=1)
 
         if labels is not None and mask is not None:
             raise ValueError('Cannot define both `labels` and `mask`')
@@ -103,34 +97,24 @@ class LCL(nn.Module):
         else:
             mask = mask.float().to(device)
 
-
-
         contrast_feature = features
         anchor_feature = contrast_feature
-        anchor_count = 2
 
         # compute logits
         anchor_dot_contrast = torch.div(
             torch.matmul(anchor_feature, contrast_feature.T),
             self.temperature)
 
-        logits_mask = torch.scatter(
-            torch.ones_like(mask),
-            1,
-            torch.arange(batch_size).view(-1, 1).to(device),
-            0
-        )
+        logits_mask = 1 - torch.eye(batch_size).to(device)
 
         ## it produces 0 for the non-matching places and 1 for matching places and neg mask does the opposite
         mask = mask * logits_mask
 
+        weighted_mask = weights[:, labels.flatten()]
 
-        weighted_mask = torch.zeros_like(logits_mask).float().to(device)
-
-
-        for i,val in enumerate(labels):
-            for j,jval in enumerate(labels):
-                weighted_mask[i,j] = weights[i,jval]
+        # weighted_mask = torch.zeros_like(logits_mask).float().to(device)
+        # for i, val in enumerate(labels):
+        #     weighted_mask[i] = weights[i][labels.flatten()]
 
         weighted_mask = weighted_mask * logits_mask
         pos_weighted_mask = weighted_mask * mask
@@ -139,7 +123,6 @@ class LCL(nn.Module):
         logits_max, _ = torch.max(anchor_dot_contrast, dim=1, keepdim=True)
 
         logits = anchor_dot_contrast - logits_max.detach()
-        # print(logits)
 
         exp_logits = torch.exp(logits) * weighted_mask
 
